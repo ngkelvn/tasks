@@ -1,117 +1,131 @@
 import { Answer } from "./interfaces/answer";
 import { Question, QuestionType } from "./interfaces/question";
+import { makeBlankQuestion } from "./objects";
 
-/**
- * Consumes an array of questions and returns a new array with only the questions
- * that are `published`.
- */
+// Only the questions that are published
 export function getPublishedQuestions(questions: Question[]): Question[] {
-    return [];
+    return questions.filter((question: Question): boolean => {
+        return question.published;
+    });
 }
 
-/**
- * Consumes an array of questions and returns a new array of only the questions that are
- * considered "non-empty". An empty question has an empty string for its `body` and
- * `expected`, and an empty array for its `options`.
- */
+// Drop the "empty" questions: empty body, empty expected AND no options
 export function getNonEmptyQuestions(questions: Question[]): Question[] {
-    return [];
+    return questions.filter((question: Question): boolean => {
+        const isEmpty =
+            question.body === "" &&
+            question.expected === "" &&
+            question.options.length === 0;
+        return !isEmpty;
+    });
 }
 
-/***
- * Consumes an array of questions and returns the question with the given `id`. If the
- * question is not found, return `null` instead.
- */
+// The question with this id, or null if there isn't one
 export function findQuestion(
     questions: Question[],
     id: number,
 ): Question | null {
-    return null;
+    const found = questions.find((question: Question): boolean => {
+        return question.id === id;
+    });
+    if (found === undefined) {
+        return null;
+    }
+    return found;
 }
 
-/**
- * Consumes an array of questions and returns a new array that does not contain the question
- * with the given `id`.
- * Hint: use filter
- */
+// A new array without the question that has this id
 export function removeQuestion(questions: Question[], id: number): Question[] {
-    return [];
+    return questions.filter((question: Question): boolean => {
+        return question.id !== id;
+    });
 }
 
-/***
- * Consumes an array of questions and returns a new array containing just the names of the
- * questions, as an array.
- * Do not modify the input array.
- */
+// Just the names, in the same order
 export function getNames(questions: Question[]): string[] {
-    return [];
+    return questions.map((question: Question): string => {
+        return question.name;
+    });
 }
 
-/**
- * Consumes an array of Questions and produces a corresponding array of
- * Answers. Each Question gets its own Answer, copying over the `id` as the `questionId`,
- * making the `text` an empty string, and using false for both `submitted` and `correct`.
- */
+// One blank, unsubmitted, incorrect answer per question
 export function makeAnswers(questions: Question[]): Answer[] {
-    return [];
+    return questions.map((question: Question): Answer => {
+        return {
+            questionId: question.id,
+            text: "",
+            submitted: false,
+            correct: false,
+        };
+    });
 }
 
-/***
- * Consumes an array of Questions and produces a new array of questions, where
- * each question is now published, regardless of its previous published status.
- * Hint: as usual, do not modify the input questions array
- */
+// Every question becomes published (copies, the input is not changed)
 export function publishAll(questions: Question[]): Question[] {
-    return [];
+    return questions.map((question: Question): Question => {
+        return { ...question, published: true };
+    });
 }
 
-/***
- * Consumes an array of Questions and produces a new array of the same Questions,
- * except that a blank question has been added onto the end. Reuse the `makeBlankQuestion`
- * you defined in the `objects.ts` file.
- * Hint: as usual, do not modify the input questions array
- */
+// The same questions plus a new blank one at the end
 export function addNewQuestion(
     questions: Question[],
     id: number,
     name: string,
     type: QuestionType,
 ): Question[] {
-    return [];
+    const newQuestion = makeBlankQuestion(id, name, type);
+    return [...questions, newQuestion];
 }
 
-/***
- * Consumes an array of Questions and produces a new array of Questions, where all
- * the Questions are the same EXCEPT for the one with the given `targetId`. That
- * Question should be the same EXCEPT that its name should now be `newName`.
- * Hint: as usual, do not modify the input questions array,
- *       to make a new copy of a question with some changes, use the ... operator
- */
+// Same questions, except the one with `targetId` gets the new name
 export function renameQuestionById(
     questions: Question[],
     targetId: number,
     newName: string,
 ): Question[] {
-    return [];
+    return questions.map((question: Question): Question => {
+        if (question.id === targetId) {
+            return { ...question, name: newName };
+        }
+        return question;
+    });
 }
 
-/**
- * Consumes an array of Questions and produces a new array of Questions, where all
- * the Questions are the same EXCEPT for the one with the given `targetId`. That
- * Question should be the same EXCEPT that its `option` array should have a new element.
- * If the `targetOptionIndex` is -1, the `newOption` should be added to the end of the list.
- * Otherwise, it should *replace* the existing element at the `targetOptionIndex`.
- *
- * Remember, if a function starts getting too complicated, think about how a helper function
- * can make it simpler! Break down complicated tasks into little pieces.
- *
- * Hint: you need to use the ... operator for both the question and the options array
- */
+// Helper: -1 (or an index past the end) adds the option at the end,
+// otherwise the option at that index is replaced
+function changeOptions(
+    options: string[],
+    targetOptionIndex: number,
+    newOption: string,
+): string[] {
+    if (targetOptionIndex === -1 || targetOptionIndex >= options.length) {
+        return [...options, newOption];
+    }
+    return options.map((option: string, index: number): string => {
+        if (index === targetOptionIndex) {
+            return newOption;
+        }
+        return option;
+    });
+}
+
+// Same questions, except the one with `targetId` gets its options changed
 export function editOption(
     questions: Question[],
     targetId: number,
     targetOptionIndex: number,
     newOption: string,
 ): Question[] {
-    return [];
+    return questions.map((question: Question): Question => {
+        if (question.id === targetId) {
+            const newOptions = changeOptions(
+                question.options,
+                targetOptionIndex,
+                newOption,
+            );
+            return { ...question, options: newOptions };
+        }
+        return question;
+    });
 }
